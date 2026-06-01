@@ -1,0 +1,55 @@
+name: iOS App Build
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make Gradle Executable
+        run: chmod +x ./gradlew
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: |
+          cd iosApp
+          xcodegen generate
+
+      - name: Build iOS Archive
+        run: |
+          cd iosApp
+          xcodebuild clean archive \
+            -project iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Release \
+            -archivePath build/iosApp.xcarchive \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package into IPA
+        run: |
+          cd iosApp/build
+          mkdir Payload
+          cp -r iosApp.xcarchive/Products/Applications/iosApp.app Payload/
+          zip -r iosApp.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoSorter-iOS
+          path: iosApp/build/iosApp.ipa
