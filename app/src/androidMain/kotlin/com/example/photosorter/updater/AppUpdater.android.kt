@@ -20,8 +20,8 @@ import java.net.URL
 
 actual class AppUpdater(private val context: Context) {
     
-    // Configurable update URL - pointing to VictoryTea/PhotoSorter
-    private val UPDATE_URL = "https://raw.githubusercontent.com/VictoryTea/PhotoSorter/main/version.json"
+    // Configurable update URL - pointing to VictoryTea/PhotoSorter master branch
+    private val UPDATE_URL = "https://raw.githubusercontent.com/VictoryTea/PhotoSorter/master/version.json"
 
     actual suspend fun checkForUpdate(): UpdateInfo? = withContext(Dispatchers.IO) {
         try {

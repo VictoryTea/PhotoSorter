@@ -101,7 +101,7 @@ fun SettingsScreen(
             SettingsInfoItem(
                 icon = Icons.Default.Info,
                 title = "Photo Sorter",
-                subtitle = "Version 1.0.0"
+                subtitle = "Version ${com.example.photosorter.util.getAppVersion()}"
             )
             HorizontalDivider(color = GlassBorder)
             SettingsInfoItem(
