@@ -8,7 +8,7 @@ import androidx.room.RoomDatabaseConstructor
 
 @Database(
     entities = [SortDecision::class, UserStats::class],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

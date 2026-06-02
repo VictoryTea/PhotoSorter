@@ -20,9 +20,15 @@ class PhotoRepository(
      * Query recent photos from the device,
      * excluding any that have already been sorted.
      */
-    suspend fun getUnsortedPhotos(limit: Int = 50): List<PhotoItem> = withContext(Dispatchers.IO) {
+    suspend fun getUnsortedPhotos(limit: Int = 50, sortMode: com.example.photosorter.data.model.SortMode = com.example.photosorter.data.model.SortMode.Recent): List<PhotoItem> = withContext(Dispatchers.IO) {
         val sortedIds = sortDecisionDao.getSortedPhotoIds().toSet()
-        val allPhotos = photoProvider.getRecentPhotos(limit + sortedIds.size)
+        // If we are filtering, we might need to pull more items to satisfy the limit, 
+        // since we might skip many already sorted. The provider limit bounds the fetch.
+        // For OnThisDay, finding 50 might require scanning thousands of photos, 
+        // but our provider does it in-memory. We should pass a much larger limit to the provider 
+        // so it scans enough to find the matches.
+        val providerLimit = if (sortMode is com.example.photosorter.data.model.SortMode.OnThisDay) 10000 else limit + sortedIds.size
+        val allPhotos = photoProvider.getRecentPhotos(providerLimit, sortMode)
         allPhotos.filter { it.id !in sortedIds }.take(limit)
     }
 
@@ -92,6 +98,56 @@ class PhotoRepository(
     /** Get user stats as Flow */
     fun getStats(): Flow<UserStats?> = userStatsDao.getStats()
 
+    /** Get current stats once */
+    suspend fun getStatsOnce(): UserStats? = userStatsDao.getStatsOnce()
+
+    /** Set the preferred sort mode */
+    suspend fun setSortMode(mode: String) {
+        val stats = getStatsOnce()
+        if (stats != null) {
+            userStatsDao.upsert(stats.copy(sortMode = mode))
+        }
+    }
+
     /** Get sorted photo count as Flow */
     fun getSortedCount(): Flow<Int> = sortDecisionDao.getCount()
+
+    /** Get all photos marked as TRASH */
+    suspend fun getTrashedPhotos(): List<PhotoItem> = withContext(Dispatchers.IO) {
+        sortDecisionDao.getTrashedPhotos().map { decision ->
+            PhotoItem(
+                id = decision.photoId,
+                uri = decision.photoUri,
+                displayName = "Photo",
+                dateAdded = decision.timestamp,
+                size = decision.photoSize,
+                width = 0,
+                height = 0
+            )
+        }
+    }
+
+    /** Clear all trash decisions from the database */
+    suspend fun clearTrashDecisions() = withContext(Dispatchers.IO) {
+        sortDecisionDao.clearTrashDecisions()
+    }
+
+    /** Restore photos from trash (undo the trash decision) */
+    suspend fun restorePhotos(photoIds: List<Long>) = withContext(Dispatchers.IO) {
+        val trashed = sortDecisionDao.getTrashedPhotos().filter { it.photoId in photoIds }
+        val totalSizeToRestore = trashed.sumOf { it.photoSize }
+        
+        sortDecisionDao.deleteByPhotoIds(photoIds)
+
+        // Adjust stats: remove points and storage freed
+        val currentStats = userStatsDao.getStatsOnce() ?: return@withContext
+        userStatsDao.upsert(
+            currentStats.copy(
+                totalPhotosSorted = (currentStats.totalPhotosSorted - photoIds.size).coerceAtLeast(0),
+                photosTrashed = (currentStats.photosTrashed - photoIds.size).coerceAtLeast(0),
+                totalStorageFreed = (currentStats.totalStorageFreed - totalSizeToRestore).coerceAtLeast(0),
+                totalPoints = (currentStats.totalPoints - (10 * photoIds.size)).coerceAtLeast(0)
+            )
+        )
+    }
 }

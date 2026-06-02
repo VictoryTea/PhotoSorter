@@ -9,6 +9,7 @@ fun getDatabase(): AppDatabase {
     return Room.databaseBuilder<AppDatabase>(
         name = dbFile
     )
+        .fallbackToDestructiveMigration(true)
         .setDriver(BundledSQLiteDriver())
         .build()
 }

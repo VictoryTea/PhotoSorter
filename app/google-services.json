@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "143725965262",
+    "project_id": "photo-sorter-leaderboard",
+    "storage_bucket": "photo-sorter-leaderboard.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:143725965262:android:b6eb151a275021c633c59f",
+        "android_client_info": {
+          "package_name": "com.example.photosorter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOmk4P7dJjK3K1J4W4kggInWwdNbci3_I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

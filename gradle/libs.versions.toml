@@ -1,5 +1,6 @@
 [versions]
-androidGradlePlugin = "8.2.0"
+googleServices = "4.4.1"
+androidGradlePlugin = "8.5.0"
 androidxCore = "1.13.1"
 androidxLifecycle = "2.8.0"
 androidxActivity = "1.9.0"
@@ -10,13 +11,13 @@ androidxTestRunner = "1.6.0"
 androidxTestEspresso = "3.6.0"
 coroutines = "1.8.1"
 junit = "4.13.2"
-kotlin = "2.0.0"
+kotlin = "2.0.21"
 navCompose = "2.8.0-alpha10"
 lifecycleViewmodelCompose = "2.8.0"
 coil = "3.1.0"
 room = "2.8.4"
 sqlite = "2.6.2"
-ksp = "2.0.0-1.0.21"
+ksp = "2.0.21-1.0.28"
 jetbrainsCompose = "1.7.0"
 
 [libraries]
@@ -40,6 +41,7 @@ androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core",
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.1" }
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navCompose" }
 androidx-lifecycle-viewmodel-compose-jetbrains = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 
@@ -52,9 +54,11 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+firebase-firestore = { module = "dev.gitlive:firebase-firestore", version = "1.12.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

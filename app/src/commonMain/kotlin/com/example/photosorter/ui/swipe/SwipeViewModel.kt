@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.photosorter.data.local.UserStats
 import com.example.photosorter.data.model.PhotoItem
 import com.example.photosorter.data.model.SwipeAction
+import com.example.photosorter.data.model.SortMode
 import com.example.photosorter.data.repository.PhotoRepository
+import com.example.photosorter.util.AudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,8 +23,12 @@ import kotlinx.coroutines.launch
  * feedback for the UI layer.
  *
  * @param repository Data layer for photo queries, sort decisions, and stats.
+ * @param audioPlayer Plays sound effects.
  */
-class SwipeViewModel(private val repository: PhotoRepository) : ViewModel() {
+class SwipeViewModel(
+    private val repository: PhotoRepository,
+    private val audioPlayer: AudioPlayer
+) : ViewModel() {
 
     // ── Photos ───────────────────────────────────────────────────────
     private val _photos = MutableStateFlow<List<PhotoItem>>(emptyList())
@@ -32,6 +38,12 @@ class SwipeViewModel(private val repository: PhotoRepository) : ViewModel() {
 
     // ── Loading ──────────────────────────────────────────────────────
     private val _isLoading = MutableStateFlow(true)
+
+    private val _isMuted = MutableStateFlow(audioPlayer.isMuted())
+    val isMuted: StateFlow<Boolean> = _isMuted
+
+    private val _sortMode = MutableStateFlow<SortMode>(SortMode.Recent)
+    val sortMode: StateFlow<SortMode> = _sortMode
 
     /** `true` while the initial photo list is being fetched. */
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -51,7 +63,14 @@ class SwipeViewModel(private val repository: PhotoRepository) : ViewModel() {
     private val undoStack = ArrayDeque<PhotoItem>()
 
     init {
-        loadPhotos()
+        viewModelScope.launch {
+            // Load initial sort mode from stats
+            val currentStats = repository.getStatsOnce()
+            if (currentStats != null) {
+                _sortMode.value = SortMode.fromString(currentStats.sortMode)
+            }
+            loadPhotos()
+        }
     }
 
     // ── Public API ───────────────────────────────────────────────────
@@ -63,7 +82,7 @@ class SwipeViewModel(private val repository: PhotoRepository) : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                _photos.value = repository.getUnsortedPhotos()
+                _photos.value = repository.getUnsortedPhotos(50, _sortMode.value)
             } finally {
                 _isLoading.value = false
             }
@@ -83,6 +102,14 @@ class SwipeViewModel(private val repository: PhotoRepository) : ViewModel() {
             SwipeDirection.UP -> SwipeAction.ALBUM
             SwipeDirection.DOWN -> SwipeAction.SKIP
             SwipeDirection.NONE -> return
+        }
+
+        val themeId = stats.value?.activeThemeId ?: "default"
+        when (action) {
+            SwipeAction.KEEP -> audioPlayer.playKeepSound(themeId)
+            SwipeAction.TRASH -> audioPlayer.playTrashSound(themeId)
+            SwipeAction.ALBUM -> audioPlayer.playAlbumSound(themeId)
+            SwipeAction.SKIP -> audioPlayer.playSkipSound(themeId)
         }
 
         val points = when (action) {
@@ -120,5 +147,17 @@ class SwipeViewModel(private val repository: PhotoRepository) : ViewModel() {
         _lastPoints.value = 0
     }
 
+    fun toggleMute() {
+        val newMuted = !audioPlayer.isMuted()
+        audioPlayer.setMuted(newMuted)
+        _isMuted.value = newMuted
+    }
 
+    fun setSortMode(mode: SortMode) {
+        _sortMode.value = mode
+        viewModelScope.launch {
+            repository.setSortMode(mode.toString())
+            loadPhotos()
+        }
+    }
 }

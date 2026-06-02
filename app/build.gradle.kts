@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
@@ -42,6 +43,9 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             
+            // Serialization
+            implementation(libs.kotlinx.serialization.json)
+            
             // Navigation
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose.jetbrains)
@@ -52,6 +56,9 @@ kotlin {
             // Room Database
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
+            
+            // Firebase
+            implementation(libs.firebase.firestore)
         }
         
         androidMain.dependencies {
@@ -82,7 +89,7 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = false
+        buildConfig = true
     }
     packaging {
         resources {

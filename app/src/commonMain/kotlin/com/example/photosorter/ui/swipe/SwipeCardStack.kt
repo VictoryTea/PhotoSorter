@@ -52,6 +52,7 @@ private const val MAX_VISIBLE_CARDS = 3
 fun SwipeCardStack(
     photos: List<PhotoItem>,
     onCardSwiped: (PhotoItem, SwipeDirection) -> Unit,
+    onInfoClick: (PhotoItem) -> Unit = {},
     onUndo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -74,6 +75,7 @@ fun SwipeCardStack(
                     SwipeableCard(
                         photoItem = photo,
                         onSwiped = { direction -> onCardSwiped(photo, direction) },
+                        onInfoClick = { onInfoClick(photo) },
                         enabled = index == 0, // only top card is interactive
                         modifier = Modifier
                             .fillMaxWidth()

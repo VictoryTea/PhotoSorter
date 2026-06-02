@@ -65,14 +65,12 @@ import com.example.photosorter.ui.stats.StatsViewModel
 
 @Composable
 fun HomeScreen(
+    viewModel: StatsViewModel,
     onStartSorting: () -> Unit,
     onNavigateToStats: () -> Unit,
+    onNavigateToTrash: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val viewModel: StatsViewModel = viewModel(
-        factory = StatsViewModel.factory(context)
-    )
     val stats by viewModel.stats.collectAsState()
 
     Column(
@@ -140,6 +138,13 @@ fun HomeScreen(
         StorageFreedCard(
             bytesFreed = currentStats.totalStorageFreed,
             onClick = onNavigateToStats
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Review Trash card
+        ReviewTrashCard(
+            onClick = onNavigateToTrash
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -316,6 +321,55 @@ private fun StorageFreedCard(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = "View stats",
+            tint = TextSecondary,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+@Composable
+private fun ReviewTrashCard(
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(DarkCard)
+            .border(1.dp, GlassBorder, RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick)
+            .padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFFF6B6B).copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "🗑️",
+                fontSize = 24.sp
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Review Trash",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = TextPrimary
+            )
+            Text(
+                text = "Empty deleted photos",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFFFF6B6B)
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = "Review trash",
             tint = TextSecondary,
             modifier = Modifier.size(20.dp)
         )

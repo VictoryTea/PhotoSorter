@@ -22,4 +22,13 @@ interface SortDecisionDao {
 
     @Query("SELECT COUNT(*) FROM sort_decisions")
     fun getCount(): Flow<Int>
+
+    @Query("SELECT * FROM sort_decisions WHERE decision = 'TRASH' ORDER BY timestamp DESC")
+    suspend fun getTrashedPhotos(): List<SortDecision>
+
+    @Query("DELETE FROM sort_decisions WHERE decision = 'TRASH'")
+    suspend fun clearTrashDecisions()
+
+    @Query("DELETE FROM sort_decisions WHERE photoId IN (:photoIds)")
+    suspend fun deleteByPhotoIds(photoIds: List<Long>)
 }
