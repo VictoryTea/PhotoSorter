@@ -145,6 +145,12 @@ fun MainNavigation(
                                 popUpTo(Home) { inclusive = false }
                             }
                             selectedTab = Trash
+                        },
+                        onNavigateToSettings = {
+                            navController.navigate(Settings) {
+                                popUpTo(Home) { inclusive = false }
+                            }
+                            selectedTab = Settings
                         }
                     )
                 }
