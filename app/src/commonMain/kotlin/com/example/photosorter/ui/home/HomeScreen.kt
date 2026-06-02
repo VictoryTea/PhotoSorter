@@ -194,7 +194,7 @@ private fun QuickStat(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(GlassSurface)
+            .background(Color.Black.copy(alpha = 0.7f))
             .border(1.dp, GlassBorder, RoundedCornerShape(16.dp))
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
