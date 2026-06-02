@@ -15,6 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +46,8 @@ fun StoreScreen(viewModel: StoreViewModel) {
     val points = stats?.totalPoints ?: 0
     val unlockedThemes = stats?.unlockedThemes?.split(",") ?: listOf("default")
     val activeThemeId = stats?.activeThemeId ?: "default"
+    
+    var themeToPurchase by remember { mutableStateOf<ThemeItem?>(null) }
 
     Column(
         modifier = Modifier
@@ -91,11 +96,34 @@ fun StoreScreen(viewModel: StoreViewModel) {
                         if (isUnlocked) {
                             viewModel.equipTheme(theme.id)
                         } else if (canAfford) {
-                            viewModel.purchaseTheme(theme.id, theme.cost)
+                            themeToPurchase = theme
                         }
                     }
                 )
             }
+        }
+        
+        if (themeToPurchase != null) {
+            val theme = themeToPurchase!!
+            AlertDialog(
+                onDismissRequest = { themeToPurchase = null },
+                title = { Text("Unlock ${theme.name}?", color = MaterialTheme.colorScheme.onSurface) },
+                text = { Text("Are you sure you want to spend ${theme.cost} points to unlock this theme?", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.purchaseTheme(theme.id, theme.cost)
+                        themeToPurchase = null
+                    }) {
+                        Text("Unlock", color = theme.primaryColor, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { themeToPurchase = null }) {
+                        Text("Cancel", color = Color.Gray)
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         }
     }
 }
